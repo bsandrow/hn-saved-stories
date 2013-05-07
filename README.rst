@@ -1,15 +1,16 @@
-=======================
-Python Project Tempalte
-=======================
+================
+hn-saved-stories
+================
 
-This is a basic template for starting a python project.
+hn-saved-stores is a script for archiving all of the saved stories in your
+Hacker News profile (i.e. all of the stories that you have upvoted).
 
 Credits
 -------
 
-Copyright 2012 Brandon Sandrowicz <brandon@sandrowicz.org>
+Copyright 2013 Brandon Sandrowicz <brandon@sandrowicz.org>
 
 License
 -------
 
-See LICENSE.
+MIT License. See LICENSE.
