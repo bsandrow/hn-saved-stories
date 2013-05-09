@@ -13,7 +13,7 @@ def get_options():
 
     parser.add_argument('-u', '--username', help="HackerNews username")
     parser.add_argument('-p', '--password', help="HackerNews password")
-    parser.add_argument('-f', '--file', help="File to download to. (default: hnss.json)", default="hnss.json")
+    parser.add_argument('-f', '--file', help="File to download to. '-' can be used to redirect output to stdout. (default: hnss.json)", default="hnss.json")
 
     return parser.parse_args()
 
@@ -24,8 +24,11 @@ def main():
     session.login(options.username, options.password)
     stories = session.get_saved_stories(max_pages=1)
 
-    with open(options.file, 'wb') as fh:
-        fh.write(json.dumps(stories))
+    if options.file == '-':
+        sys.stdout.write(json.dumps(stories))
+    else:
+        with open(options.file, 'wb') as fh:
+            fh.write(json.dumps(stories))
 
 def run():
     try:
