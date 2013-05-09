@@ -10,7 +10,9 @@ from datetime import datetime, timedelta
 from pprint import pprint as PP
 from time import sleep
 from urlparse import urljoin
+
 from .utils import hn_relatime_to_datetime
+from .logger import logger
 
 class HNSession(object):
     max_retries = 2
@@ -116,19 +118,18 @@ class HNSession(object):
 
         while max_pages is None or page <= max_pages:
             try:
-                print "Page %d..." % page
-                print "  url = %s" % url
-                print "  Fetching..."
+                logger.info("Page %d:" % page)
+                logger.debug("  url = %s" % url)
+                logger.info("  Fetching...")
+
                 try:
                     response = self.get(url)
                 except requests.exceptions.HTTPError as e:
                     raise Exception("Error: Failed to retrieve page %d, error:'%s', rurl: %s" % (page, str(e), url))
 
-                print "  Parsing..."
+                logger.info("  Parsing...")
                 html = lxml.html.fromstring(response.content)
                 basetime = datetime.strptime(response.headers['date'], "%a, %d %B %Y %H:%M:%S %Z")
-
-
 
                 title = html.cssselect('td.title') # See Footnote [3]
                 subtext = html.cssselect('td.subtext')
@@ -143,16 +144,16 @@ class HNSession(object):
                 url = next_link
                 page += 1
 
-                print "  Sleeping (1s)..."
+                logger.info("  Sleeping (1s)...")
                 sleep(1)
             except Exception as e:
-                print "Caught exception. Dumping page..."
-                print "______________"
-                print lxml.html.tostring(html, pretty_print=True)
-                print "______________"
+                logger.debug("Caught exception. Dumping page...")
+                logger.debug("______________")
+                logger.debug(lxml.html.tostring(html, pretty_print=True))
+                logger.debug("______________")
                 raise
 
-        print "Done."
+        logger.info("Done.")
         return stories
 
 # Footnotes

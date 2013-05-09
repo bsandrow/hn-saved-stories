@@ -1,9 +1,11 @@
 import argparse
+import logging
 import json
 import os
 import sys
 
 from hn_saved_stories import HNSession
+from hn_saved_stories.logger import logger
 
 def get_options():
     parser = argparse.ArgumentParser(description="""
@@ -15,10 +17,18 @@ def get_options():
     parser.add_argument('-p', '--password', help="HackerNews password")
     parser.add_argument('-f', '--file', help="File to download to. '-' can be used to redirect output to stdout. (default: hnss.json)", default="hnss.json")
 
+    parser.add_argument('-d', '--debug', action='store_true', help="Debug mode.")
+    parser.add_argument('-v', '--verbose', action='store_true', help="Verbose output.")
+
     return parser.parse_args()
 
 def main():
     options = get_options()
+
+    if options.debug:
+        logger.setLevel(logging.DEBUG)
+    elif options.verbose:
+        logger.setLevel(logging.INFO)
 
     session = HNSession()
     session.login(options.username, options.password)
