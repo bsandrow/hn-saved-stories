@@ -99,7 +99,7 @@ class HNSession(object):
             story['url'] = title_anchor.get('href')
             story['title'] = title_anchor.text
             story['comments'] = comments_anchor.get('href')
-            story['submitter'] = subtext.xpath('.//a[1]/text()')[0]
+            story['submitter'] = subtext.xpath('.//a[1]//text()')[0] # See Footnote [4]
             story['submitter_link'] = subtext.xpath('.//a[1]/@href')[0]
             story['submitted_at'] = str( hn_relatime_to_datetime(self.last_response_time(), subtext.xpath('./text()')[1]) )
 
@@ -172,3 +172,9 @@ class HNSession(object):
 #     The series should look something like [1,2,1,2,1,2,1,2,3], #1 and #2
 #     alternating with #3 being the last in the list. #3 will be missing on the
 #     final page.
+#
+# [4] The '//text()' part is needed because sometimes the submitter has a
+#     <font> element colouring it, so text() is not a direct child of the
+#     anchor. E.g.:
+#
+#       <a href="user?id=foofoobar"><font color="#3c963c">foofoobar</font></a>
