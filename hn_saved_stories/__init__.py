@@ -117,13 +117,14 @@ class HNSession(object):
         while max_pages is None or page <= max_pages:
             try:
                 print "Page %d..." % page
-                print "Grabbing page: %s..." % url
+                print "  url = %s" % url
+                print "  Fetching..."
                 try:
                     response = self.get(url)
                 except requests.exceptions.HTTPError as e:
                     raise Exception("Error: Failed to retrieve page %d, error:'%s', rurl: %s" % (page, str(e), url))
 
-                print "Parsing..."
+                print "  Parsing..."
                 html = lxml.html.fromstring(response.content)
                 basetime = datetime.strptime(response.headers['date'], "%a, %d %B %Y %H:%M:%S %Z")
 
@@ -142,7 +143,7 @@ class HNSession(object):
                 url = next_link
                 page += 1
 
-                print "Sleeping for 1 second..."
+                print "  Sleeping (1s)..."
                 sleep(1)
             except Exception as e:
                 print "Caught exception. Dumping page..."
