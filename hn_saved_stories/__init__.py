@@ -70,7 +70,7 @@ class HNSession(object):
         except requests.exceptions.HTTPError:
             raise Exception("Error: Unable to retrieve login page")
 
-        doc = lxml.html.fromstring(response.content)
+        doc = lxml.html.fromstring(response.text)
 
         fields = doc.xpath('.//input')
         form_data = { x.get('name'): x.get('value') for x in fields }
@@ -134,7 +134,7 @@ class HNSession(object):
                     raise Exception("Error: Failed to retrieve page %d, error:'%s', rurl: %s" % (page, str(e), url))
 
                 logger.info("  Parsing...")
-                html = lxml.html.fromstring(response.content)
+                html = lxml.html.fromstring(response.text)
                 basetime = datetime.strptime(response.headers['date'], "%a, %d %B %Y %H:%M:%S %Z")
 
                 title = html.cssselect('td.title') # See Footnote [3]
