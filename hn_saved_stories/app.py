@@ -5,13 +5,15 @@ import os
 import re
 import sys
 
-from xdg.BaseDirectory import load_first_config
+from xdg.BaseDirectory import load_first_config, save_data_path
 from hn_saved_stories import HNSession
 from hn_saved_stories.logger import logger
 
 def get_options():
     config_dir = load_first_config('hnss')
+    data_dir = save_data_path('hnss')
     auth_file_default = os.path.join(config_dir, 'auth.json')
+    data_file_default = os.path.join(data_dir, 'data.json')
 
     if os.path.exists('auth.json'):
         with open('auth.json', 'rb') as fh:
@@ -26,7 +28,7 @@ def get_options():
     parser.add_argument('-u', '--username', default=None, help="HackerNews username")
     parser.add_argument('-p', '--password', default=None, help="HackerNews password")
     parser.add_argument('-a', '--auth-file', default=None, help="Auth file (JSON format). (default: %s)" % auth_file_default)
-    parser.add_argument('-f', '--file', help="File to download to. '-' can be used to redirect output to stdout. (default: hnss.json)", default="hnss.json")
+    parser.add_argument('-f', '--file', help="File to download to. '-' can be used to redirect output to stdout. (default: %s)" % data_file_default, default=data_file_default)
     parser.add_argument('-m', '--max-pages', type=int, default=1, help="The maximum number of pages to go into the past. 0 goes back all the way to the beginning of time. (default: 1)")
     parser.add_argument('-d', '--debug', action='store_true', help="Debug mode.")
     parser.add_argument('-v', '--verbose', action='store_true', help="Verbose output.")
