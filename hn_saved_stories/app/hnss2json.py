@@ -17,7 +17,7 @@ def get_options():
     parser.add_argument('-u', '--username', help="HackerNews username")
     parser.add_argument('-p', '--password', help="HackerNews password")
     parser.add_argument('-f', '--file', help="File to download to. '-' can be used to redirect output to stdout. (default: hnss.json)", default="hnss.json")
-
+    parser.add_argument('-m', '--max-pages', type=int, default=1, help="The maximum number of pages to go into the past. 0 goes back all the way to the beginning of time. (default: 1)")
     parser.add_argument('-d', '--debug', action='store_true', help="Debug mode.")
     parser.add_argument('-v', '--verbose', action='store_true', help="Verbose output.")
 
@@ -43,7 +43,7 @@ def main():
     session = HNSession()
     session.login(options.username, options.password)
 
-    new_stories = session.get_saved_stories(max_pages=None, break_func=break_func)
+    new_stories = session.get_saved_stories(max_pages=(options.max_pages or None), break_func=break_func)
 
     stories_to_add = set(new_stories.keys()) - set(stories.keys())
     stories.update({ story_id: new_stories[story_id] for story_id in stories_to_add })
