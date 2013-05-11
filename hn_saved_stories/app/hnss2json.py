@@ -43,7 +43,7 @@ def main():
     session = HNSession()
     session.login(options.username, options.password)
 
-    new_stories = session.get_saved_stories(max_pages=2, break_func=break_func)
+    new_stories = session.get_saved_stories(max_pages=None, break_func=break_func)
 
     stories_to_add = set(new_stories.keys()) - set(stories.keys())
     stories.update({ story_id: new_stories[story_id] for story_id in stories_to_add })
