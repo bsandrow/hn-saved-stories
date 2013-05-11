@@ -20,3 +20,7 @@ def hn_relatime_to_datetime(basetime, hn_relatime):
         return basetime.date() - timedelta(days=days)
 
     return None
+
+def get_story_id(story):
+    match = re.search(r'id=(\d+)$', story['comments'])
+    return match.group(1) if match else None

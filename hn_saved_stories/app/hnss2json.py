@@ -2,6 +2,7 @@ import argparse
 import logging
 import json
 import os
+import re
 import sys
 
 from hn_saved_stories import HNSession
@@ -30,9 +31,22 @@ def main():
     elif options.verbose:
         logger.setLevel(logging.INFO)
 
+    if options.file != '-' and os.path.exists(options.file):
+        with open(options.file, 'rb') as fh:
+            stories = json.loads(fh.read())
+    else:
+        stories = {}
+
+    most_recent_story = max(map(int, stories.keys())) if stories.keys() else 0
+    break_func = lambda stories: most_recent_story and str(most_recent_story) in stories
+
     session = HNSession()
     session.login(options.username, options.password)
-    stories = session.get_saved_stories(max_pages=1)
+
+    new_stories = session.get_saved_stories(max_pages=2, break_func=break_func)
+
+    stories_to_add = set(new_stories.keys()) - set(stories.keys())
+    stories.update({ story_id: new_stories[story_id] for story_id in stories_to_add })
 
     if options.file == '-':
         sys.stdout.write(json.dumps(stories))

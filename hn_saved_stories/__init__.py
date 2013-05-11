@@ -11,7 +11,7 @@ from pprint import pprint as PP
 from time import sleep
 from urlparse import urljoin
 
-from .utils import hn_relatime_to_datetime
+from .utils import hn_relatime_to_datetime, get_story_id
 from .logger import logger
 
 class HNSession(object):
@@ -84,11 +84,17 @@ class HNSession(object):
         self.username = username
         self.last_response = response
 
-    def get_saved_stories(self, max_pages=None):
+    def get_saved_stories(self, max_pages=None, break_func=None):
         """ Fetch the list of 'saved stories' from a profile
 
         Fetch the list of saved stories for a Hacker News user account. The
         session needs to be logged into an account for this to work.
+
+        break_func - A function that takes the current page's story list, and
+                     returns True if we should break out of the loop.
+
+        max_pages - The maximum number of pages that we should go through
+                    before aborting. A value of None goes through all pages.
         """
 
         def parse_story(title, subtext):
@@ -110,10 +116,10 @@ class HNSession(object):
                 if key in url_keys and story.get(key):
                     story[key] = self.resolve_url(story[key])
 
-            return story
+            return get_story_id(story), story
 
         page = 1
-        stories = []
+        stories = {}
         url = 'https://news.ycombinator.com/saved?id=%s' % self.username
 
         while max_pages is None or page <= max_pages:
@@ -133,15 +139,18 @@ class HNSession(object):
 
                 title = html.cssselect('td.title') # See Footnote [3]
                 subtext = html.cssselect('td.subtext')
-                stories += [ parse_story(*s) for s in zip(title[1::2], subtext) ]
 
-                next_link = title[-1].xpath('.//a[text() = "More"]')
-                if not next_link:
+                page_stories = dict([ parse_story(*s) for s in zip(title[1::2], subtext) ])
+                next_link = title[-1].xpath('.//a[text() = "More"]/@href')
+                next_link = next_link[0] if next_link else None
+
+                stories.update(page_stories)
+
+                should_break = (break_func and break_func(page_stories)) or next_link is None
+                if should_break:
                     break
-                else:
-                    next_link = self.resolve_url(next_link[0].get('href'))
 
-                url = next_link
+                url = self.resolve_url(next_link)
                 page += 1
 
                 logger.info("  Sleeping (1s)...")
