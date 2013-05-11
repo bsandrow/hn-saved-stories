@@ -5,23 +5,52 @@ import os
 import re
 import sys
 
+from xdg.BaseDirectory import load_first_config
 from hn_saved_stories import HNSession
 from hn_saved_stories.logger import logger
 
 def get_options():
+    config_dir = load_first_config('hnss')
+    auth_file_default = os.path.join(config_dir, 'auth.json')
+
+    if os.path.exists('auth.json'):
+        with open('auth.json', 'rb') as fh:
+            auth = json.loads(fh.read())
+
+
     parser = argparse.ArgumentParser(description="""
         Download saved stories from HackerNews and dump the resultant data into
         a .json file.
         """)
 
-    parser.add_argument('-u', '--username', help="HackerNews username")
-    parser.add_argument('-p', '--password', help="HackerNews password")
+    parser.add_argument('-u', '--username', default=None, help="HackerNews username")
+    parser.add_argument('-p', '--password', default=None, help="HackerNews password")
+    parser.add_argument('-a', '--auth-file', default=None, help="Auth file (JSON format). (default: %s)" % auth_file_default)
     parser.add_argument('-f', '--file', help="File to download to. '-' can be used to redirect output to stdout. (default: hnss.json)", default="hnss.json")
     parser.add_argument('-m', '--max-pages', type=int, default=1, help="The maximum number of pages to go into the past. 0 goes back all the way to the beginning of time. (default: 1)")
     parser.add_argument('-d', '--debug', action='store_true', help="Debug mode.")
     parser.add_argument('-v', '--verbose', action='store_true', help="Verbose output.")
 
-    return parser.parse_args()
+    options = parser.parse_args()
+
+    if options.auth_file:
+        with open(options.auth_file, 'rb') as fh:
+            auth_info = json.loads(fh.read())
+            options.username = options.username or auth_info['username']
+            options.password = options.password or auth_info['password']
+    else:
+        if os.path.exists(auth_file_default):
+            with open(auth_file_default, 'rb') as fh:
+                auth_info = json.loads(fh.read())
+                options.username = options.username or auth_info['username']
+                options.password = options.password or auth_info['password']
+
+    if not options.username:
+        sys.exit("Error: No username given.")
+    if not options.password:
+        sys.exit("Error: No password given.")
+
+    return options
 
 def main():
     options = get_options()
