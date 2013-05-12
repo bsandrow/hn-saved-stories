@@ -22,7 +22,9 @@ def get_options():
 
     parser = argparse.ArgumentParser(description="""
         Download saved stories from HackerNews and dump the resultant data into
-        a .json file.
+        a .json file. Subsequent runs using a previous data file will only
+        scrape the newest saved stories. (Note: There is a 30 second delay
+        between requests.)
         """)
 
     parser.add_argument('-u', '--username', default=None, help="HackerNews username")
