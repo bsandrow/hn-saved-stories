@@ -16,7 +16,7 @@ from .logger import logger
 
 class HNSession(object):
     max_retries = 2
-    retry_delay = 2
+    retry_delay = 30
 
     def __init__(self, *args, **kwargs):
         self.session = requests.Session(*args, **kwargs)
@@ -55,6 +55,7 @@ class HNSession(object):
                 if retries < self.max_retries:
                     retries += 1
                     sleep(self.retry_delay)
+                    logger.info("[Sleeping between requests (%ss)]" % self.retry_delay)
                 else:
                     raise
 
