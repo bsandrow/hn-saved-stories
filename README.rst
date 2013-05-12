@@ -19,6 +19,17 @@ Hacker News profile (i.e. all of the stories that you have upvoted).
       }
     }
 
+**Note:** This script hits the '/x?' URL pattern, which is specifically
+disallowed by robots.txt. I've made attempts to make this as low-impact as
+possible:
+
+(1) It's meant to scrape the 'saved stories' of only a single user.
+(2) There is a delay between requests.
+(3) Subsequent runs using the same output file, will only scrape as far as the most recent story in the output file.
+(4) A delay of 30 seconds between requests is obeyed (with the exception of the login requests) as per the robots.txt.
+
+That said, use this script responsibly.
+
 Usage
 -----
 
