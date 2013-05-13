@@ -8,7 +8,7 @@ except ImportError:
     print("Falling back to distutils. Functionality may be limited.")
     from distutils.core import setup
 
-requires = []
+requires = [ 'requests', 'lxml', 'cssselect', 'pyxdg' ]
 long_description = open('README.rst').read() + "\n\n" + open("ChangeLog").read()
 
 config = {
