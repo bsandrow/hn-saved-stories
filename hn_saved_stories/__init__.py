@@ -15,11 +15,17 @@ from .utils import hn_relatime_to_datetime, get_story_id
 from .logger import logger
 
 class HNSession(object):
+    user_agent = 'hn-saved-stories/0.1 (https://github.com/bsandrow/hn-saved-stories/)'
     max_retries = 2
     retry_delay = 30
 
-    def __init__(self, *args, **kwargs):
-        self.session = requests.Session(*args, **kwargs)
+    def __init__(self, headers=None):
+        headers = headers or {}
+        headers['User-Agent'] = headers.get('User-Agent', self.user_agent)
+
+        self.session = requests.Session()
+        self.session.headers = headers
+
         self.last_response = None
 
     def last_response_time(self):
