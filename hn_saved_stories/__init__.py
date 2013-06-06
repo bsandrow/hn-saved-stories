@@ -14,6 +14,21 @@ from urlparse import urljoin
 from .utils import hn_relatime_to_datetime, get_story_id
 from .logger import logger
 
+def parse_date_header(date):
+    errors = []
+    formats = [
+        "%a, %d %B %Y %H:%M:%S %Z",
+        "%a, %d %b %Y %H:%M:%S %Z",
+    ]
+
+    for format in formats:
+        try:
+            return datetime.strptime(date, format)
+        except ValueError as e:
+            errors.append(e)
+
+    raise errors[0]
+
 class HNSession(object):
     user_agent = 'hn-saved-stories/0.1 (https://github.com/bsandrow/hn-saved-stories/)'
     max_retries = 2
@@ -31,7 +46,7 @@ class HNSession(object):
     def last_response_time(self):
         """ Return the time of the last response """
         if 'last_response' in self.__dict__ and self.last_response.headers.get('date'):
-            return datetime.strptime(self.last_response.headers.get('date'), "%a, %d %B %Y %H:%M:%S %Z")
+            return parse_date_header(self.last_response.headers.get('date'))
         else:
             return None
 
@@ -142,7 +157,7 @@ class HNSession(object):
 
                 logger.info("  Parsing...")
                 html = lxml.html.fromstring(response.text)
-                basetime = datetime.strptime(response.headers['date'], "%a, %d %B %Y %H:%M:%S %Z")
+                basetime = parse_date_header(response.headers['date'])
 
                 title = html.cssselect('td.title') # See Footnote [3]
                 subtext = html.cssselect('td.subtext')
