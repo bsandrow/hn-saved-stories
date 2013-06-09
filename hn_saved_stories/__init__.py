@@ -124,7 +124,8 @@ class HNSession(object):
             url_keys = ['url', 'comments', 'submitter_link']
             story = {}
             title_anchor = title.xpath('./a')[0]
-            comments_anchor = subtext.xpath('.//a')[-1] # See Footnote [1]
+
+            comments_anchor = subtext.xpath('.//a[contains(text(), "comments") or contains(text(), "discuss")]')[0] # See Footnote [1]
 
             story['url'] = title_anchor.get('href')
             story['title'] = title_anchor.text
@@ -189,9 +190,9 @@ class HNSession(object):
 
 # Footnotes
 # ~~~~~~~~~
-# [1] Can't use xpath './/a[3]' because if you have submitted a story, the
-#     'flag' link is excluded, making only 2 anchors, so use python arrays to
-#     look for the last element in the list.
+# [1] Anchor text needs 'comments,' because Polls submitted by yourself there
+#     is a 'add choice.' Also, if the story has no comments, then the anchor
+#     text is just 'discuss.'
 #
 # [2] '[Dead]' links remove the 'href' attribute from the anchor, so you end up
 #     with None as a URL.
