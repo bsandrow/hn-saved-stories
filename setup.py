@@ -18,7 +18,7 @@ config = {
     'author'          : 'Brandon Sandrowicz',
     'author_email'    : 'brandon@sandrowicz.org',
     'url'             : 'https://github.com/bsandrow/hn-saved-stories',
-    'version'         : '0.1',
+    'version'         : '0.2',
     'packages'        : ['hn_saved_stories'],
     'package_data'    : { '': ['LICENSE'] },
     'scripts'         : glob('bin/*'),
