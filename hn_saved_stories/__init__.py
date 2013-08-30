@@ -30,7 +30,7 @@ def parse_date_header(date):
     raise errors[0]
 
 class HNSession(object):
-    user_agent = 'hn-saved-stories/0.1 (https://github.com/bsandrow/hn-saved-stories/)'
+    user_agent = 'hn-saved-stories/0.2 (https://github.com/bsandrow/hn-saved-stories/)'
     max_retries = 2
     retry_delay = 30
 
@@ -85,7 +85,7 @@ class HNSession(object):
         base_url = self.last_response_url() or 'https://news.ycombinator.com'
         return urljoin(base_url, url)
 
-    def login(self, username, password):
+    def login(self, username, password, debug=False):
         """ Log into the session using provided credentials """
         try:
             response = self.get('https://news.ycombinator.com/newslogin')
@@ -94,10 +94,15 @@ class HNSession(object):
 
         doc = lxml.html.fromstring(response.text)
 
-        fields = doc.xpath('.//input')
+        fields = doc.xpath('.//form[1]/input')
         form_data = { x.get('name'): x.get('value') for x in fields }
         form_data['u'] = username
         form_data['p'] = password
+
+        if debug:
+            print "Login Form Data: ",
+            import pprint
+            pprint.pprint(form_data)
 
         response = self.session.post('https://news.ycombinator.com/y', data=form_data, timeout=10)
         if response.status_code != requests.codes.ok:
@@ -146,6 +151,7 @@ class HNSession(object):
         url = 'https://news.ycombinator.com/saved?id=%s' % self.username
 
         while max_pages is None or page <= max_pages:
+            html = None
             try:
                 logger.info("Page %d:" % page)
                 logger.debug("  url = %s" % url)
@@ -156,6 +162,9 @@ class HNSession(object):
                 except requests.exceptions.HTTPError as e:
                     raise Exception("Error: Failed to retrieve page %d, error:'%s', rurl: %s" % (page, str(e), url))
 
+                if response.text == "Can't display that.":
+                    raise Exception("Error: Got \"Can't display that\" response.")
+
                 logger.info("  Parsing...")
                 html = lxml.html.fromstring(response.text)
                 basetime = parse_date_header(response.headers['date'])
@@ -164,7 +173,11 @@ class HNSession(object):
                 subtext = html.cssselect('td.subtext')
 
                 page_stories = dict([ parse_story(*s) for s in zip(title[1::2], subtext) ])
-                next_link = title[-1].xpath('.//a[text() = "More"]/@href')
+                try:
+                    next_link = title[-1].xpath('.//a[text() = "More"]/@href')
+                except IndexError:
+                    sys.exit("Caught IndexError. Dumping HTML:" + lxml.html.tostring(html))
+
                 next_link = next_link[0] if next_link else None
 
                 stories.update(page_stories)
@@ -179,10 +192,11 @@ class HNSession(object):
                 logger.info("  Sleeping (1s)...")
                 sleep(1)
             except Exception as e:
-                logger.debug("Caught exception. Dumping page...")
-                logger.debug("______________")
-                logger.debug(lxml.html.tostring(html, pretty_print=True))
-                logger.debug("______________")
+                if html:
+                    logger.debug("Caught exception. Dumping page...")
+                    logger.debug("______________")
+                    logger.debug(lxml.html.tostring(html, pretty_print=True))
+                    logger.debug("______________")
                 raise
 
         logger.info("Done.")
